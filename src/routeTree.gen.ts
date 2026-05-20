@@ -10,33 +10,53 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ShopSlugAdminRouteImport } from './routes/$shopSlug.admin'
+import { Route as ShopSlugProductSlugRouteImport } from './routes/$shopSlug.$productSlug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ShopSlugAdminRoute = ShopSlugAdminRouteImport.update({
+  id: '/$shopSlug/admin',
+  path: '/$shopSlug/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShopSlugProductSlugRoute = ShopSlugProductSlugRouteImport.update({
+  id: '/$shopSlug/$productSlug',
+  path: '/$shopSlug/$productSlug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/$shopSlug/$productSlug': typeof ShopSlugProductSlugRoute
+  '/$shopSlug/admin': typeof ShopSlugAdminRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/$shopSlug/$productSlug': typeof ShopSlugProductSlugRoute
+  '/$shopSlug/admin': typeof ShopSlugAdminRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/$shopSlug/$productSlug': typeof ShopSlugProductSlugRoute
+  '/$shopSlug/admin': typeof ShopSlugAdminRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/$shopSlug/$productSlug' | '/$shopSlug/admin'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/$shopSlug/$productSlug' | '/$shopSlug/admin'
+  id: '__root__' | '/' | '/$shopSlug/$productSlug' | '/$shopSlug/admin'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ShopSlugProductSlugRoute: typeof ShopSlugProductSlugRoute
+  ShopSlugAdminRoute: typeof ShopSlugAdminRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,12 +68,38 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/$shopSlug/admin': {
+      id: '/$shopSlug/admin'
+      path: '/$shopSlug/admin'
+      fullPath: '/$shopSlug/admin'
+      preLoaderRoute: typeof ShopSlugAdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/$shopSlug/$productSlug': {
+      id: '/$shopSlug/$productSlug'
+      path: '/$shopSlug/$productSlug'
+      fullPath: '/$shopSlug/$productSlug'
+      preLoaderRoute: typeof ShopSlugProductSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ShopSlugProductSlugRoute: ShopSlugProductSlugRoute,
+  ShopSlugAdminRoute: ShopSlugAdminRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
