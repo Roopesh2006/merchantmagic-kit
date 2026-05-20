@@ -14,10 +14,157 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      offers: {
+        Row: {
+          created_at: string
+          discount_price: number
+          expires_at: string
+          id: string
+          product_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          discount_price: number
+          expires_at: string
+          id?: string
+          product_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          discount_price?: number
+          expires_at?: string
+          id?: string
+          product_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offers_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: true
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          banner_url_1: string
+          banner_url_2: string | null
+          created_at: string
+          description: string
+          id: string
+          name: string
+          original_price: number | null
+          rate: number
+          shop_id: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          banner_url_1?: string
+          banner_url_2?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          name: string
+          original_price?: number | null
+          rate?: number
+          shop_id: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          banner_url_1?: string
+          banner_url_2?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          name?: string
+          original_price?: number | null
+          rate?: number
+          shop_id?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shop"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shop_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shop: {
+        Row: {
+          admin_password_hash: string
+          created_at: string
+          id: string
+          name: string
+          shop_phone_number: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          admin_password_hash: string
+          created_at?: string
+          id?: string
+          name: string
+          shop_phone_number: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          admin_password_hash?: string
+          created_at?: string
+          id?: string
+          name?: string
+          shop_phone_number?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
-      [_ in never]: never
+      shop_public: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          name: string | null
+          shop_phone_number: string | null
+          slug: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string | null
+          name?: string | null
+          shop_phone_number?: string | null
+          slug?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string | null
+          name?: string | null
+          shop_phone_number?: string | null
+          slug?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never
