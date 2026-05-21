@@ -116,7 +116,7 @@ export const adminListProducts = createServerFn({ method: "POST" })
     const { data: products, error } = await supabaseAdmin
       .from("products")
       .select(
-        "id, name, slug, description, rate, original_price, banner_url_1, banner_url_2",
+        "id, name, slug, description, rate, original_price, banner_url_1, banner_url_2, category",
       )
       .eq("shop_id", shopId)
       .order("created_at", { ascending: false });
@@ -163,6 +163,7 @@ const productSchema = z.object({
   original_price: z.number().nonnegative().max(1_000_000).nullable(),
   banner_url_1: z.string().trim().url().max(1000),
   banner_url_2: z.string().trim().url().max(1000).nullable(),
+  category: z.string().trim().min(1).max(50).nullable(),
 });
 
 export const adminUpsertProduct = createServerFn({ method: "POST" })
@@ -178,6 +179,7 @@ export const adminUpsertProduct = createServerFn({ method: "POST" })
       original_price: data.original_price,
       banner_url_1: data.banner_url_1,
       banner_url_2: data.banner_url_2,
+      category: data.category,
     };
     if (data.id) {
       const { error } = await supabaseAdmin
