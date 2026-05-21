@@ -10,15 +10,35 @@ import { WhatsAppButton } from "@/components/WhatsAppButton";
 
 export const Route = createFileRoute("/$shopSlug/$productSlug")({
   component: ProductPage,
-  head: ({ params }) => ({
-    meta: [
-      { title: `${params.productSlug} — ${params.shopSlug}` },
-      {
-        name: "description",
-        content: `Buy ${params.productSlug} via WhatsApp from ${params.shopSlug}.`,
-      },
-    ],
-  }),
+  loader: async ({ params }) => {
+    try {
+      const data = await getStorefront({ data: params });
+      return { data };
+    } catch {
+      return { data: null };
+    }
+  },
+  head: ({ params, loaderData }) => {
+    const d = loaderData?.data;
+    const title = d ? `${d.product.name} — ${d.shop.name}` : `${params.productSlug} — ${params.shopSlug}`;
+    const desc = d?.product.description?.slice(0, 160) || `Buy ${params.productSlug} via WhatsApp from ${params.shopSlug}.`;
+    const image = d?.product.banner_url_1;
+    const url = `https://merchantmagic-kit.lovable.app/${params.shopSlug}/${params.productSlug}`;
+    return {
+      meta: [
+        { title },
+        { name: "description", content: desc },
+        { property: "og:title", content: title },
+        { property: "og:description", content: desc },
+        { property: "og:type", content: "product" },
+        { property: "og:url", content: url },
+        ...(image ? [{ property: "og:image", content: image }, { name: "twitter:image", content: image }] : []),
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:title", content: title },
+        { name: "twitter:description", content: desc },
+      ],
+    };
+  },
 });
 
 function ProductPage() {
