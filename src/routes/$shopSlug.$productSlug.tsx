@@ -24,7 +24,8 @@ export const Route = createFileRoute("/$shopSlug/$productSlug")({
     const title = d ? `${d.product.name} — ${d.shop.name}` : `${params.productSlug} — ${params.shopSlug}`;
     const desc = d?.product.description?.slice(0, 160) || `Buy ${params.productSlug} via WhatsApp from ${params.shopSlug}.`;
     const image = d?.product.banner_url_1;
-    const url = `https://merchantmagic-kit.lovable.app/${params.shopSlug}/${params.productSlug}`;
+    const baseUrl = import.meta.env.VITE_APP_URL || "";
+    const url = `${baseUrl}/${params.shopSlug}/${params.productSlug}`;
     return {
       meta: [
         { title },
