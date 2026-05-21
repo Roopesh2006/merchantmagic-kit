@@ -57,6 +57,7 @@ function PlatformAdmin() {
   const [shopName, setShopName] = useState('')
   const [shopSlug, setShopSlug] = useState('')
   const [shopPhone, setShopPhone] = useState('')
+  const [shopPassword, setShopPassword] = useState('')
   const [isSubmittingShop, setIsSubmittingShop] = useState(false)
 
   // Product State
@@ -66,14 +67,14 @@ function PlatformAdmin() {
   const [productDesc, setProductDesc] = useState('')
   const [productRate, setProductRate] = useState('')
   const [productOriginalPrice, setProductOriginalPrice] = useState('')
+  const [bannerUrl1, setBannerUrl1] = useState('')
+  const [bannerUrl2, setBannerUrl2] = useState('')
   const [isSubmittingProduct, setIsSubmittingProduct] = useState(false)
 
   // Offer State
   const [offerProductId, setOfferProductId] = useState('')
   const [discountPrice, setDiscountPrice] = useState('')
   const [expiresAt, setExpiresAt] = useState('')
-  const [bannerUrl1, setBannerUrl1] = useState('')
-  const [bannerUrl2, setBannerUrl2] = useState('')
   const [isSubmittingOffer, setIsSubmittingOffer] = useState(false)
 
   const handleLogin = (e: React.FormEvent) => {
@@ -94,10 +95,11 @@ function PlatformAdmin() {
         name: shopName,
         slug: shopSlug,
         shop_phone_number: shopPhone,
+        admin_password_hash: shopPassword,
       }])
       if (error) throw error
       alert('Shop added successfully!')
-      setShopName(''); setShopSlug(''); setShopPhone('');
+      setShopName(''); setShopSlug(''); setShopPhone(''); setShopPassword('');
     } catch (error: any) {
       alert(`Error adding shop: ${error.message}`)
     } finally {
@@ -116,11 +118,14 @@ function PlatformAdmin() {
         description: productDesc,
         rate: parseFloat(productRate),
         original_price: parseFloat(productOriginalPrice),
+        banner_url_1: bannerUrl1,
+        banner_url_2: bannerUrl2,
       }])
       if (error) throw error
       alert('Product added successfully!')
       setProductShopId(''); setProductName(''); setProductSlug('');
       setProductDesc(''); setProductRate(''); setProductOriginalPrice('');
+      setBannerUrl1(''); setBannerUrl2('');
     } catch (error: any) {
       alert(`Error adding product: ${error.message}`)
     } finally {
@@ -136,13 +141,10 @@ function PlatformAdmin() {
         product_id: offerProductId,
         discount_price: parseFloat(discountPrice),
         expires_at: expiresAt,
-        banner_url_1: bannerUrl1,
-        banner_url_2: bannerUrl2,
       }])
       if (error) throw error
       alert('Offer added successfully!')
       setOfferProductId(''); setDiscountPrice(''); setExpiresAt('');
-      setBannerUrl1(''); setBannerUrl2('');
     } catch (error: any) {
       alert(`Error adding offer: ${error.message}`)
     } finally {
@@ -207,6 +209,7 @@ function PlatformAdmin() {
               <InputField label="Shop Name" value={shopName} setValue={setShopName} />
               <InputField label="Slug" value={shopSlug} setValue={setShopSlug} placeholder="my-awesome-shop" />
               <InputField label="Phone Number" value={shopPhone} setValue={setShopPhone} type="tel" />
+              <InputField label="Admin Password" value={shopPassword} setValue={setShopPassword} type="password" />
               <SubmitButton label="Create Shop" isSubmitting={isSubmittingShop} />
             </form>
           </section>
@@ -232,6 +235,8 @@ function PlatformAdmin() {
                 <InputField label="Rate" value={productRate} setValue={setProductRate} type="number" step="0.01" />
                 <InputField label="Original Price" value={productOriginalPrice} setValue={setProductOriginalPrice} type="number" step="0.01" />
               </div>
+              <InputField label="Banner URL 1" value={bannerUrl1} setValue={setBannerUrl1} type="url" />
+              <InputField label="Banner URL 2" value={bannerUrl2} setValue={setBannerUrl2} type="url" />
               <SubmitButton label="Create Product" isSubmitting={isSubmittingProduct} />
             </form>
           </section>
@@ -252,8 +257,6 @@ function PlatformAdmin() {
                   required
                 />
               </div>
-              <InputField label="Banner URL 1" value={bannerUrl1} setValue={setBannerUrl1} type="url" />
-              <InputField label="Banner URL 2" value={bannerUrl2} setValue={setBannerUrl2} type="url" />
               <SubmitButton label="Launch Flash Sale" isSubmitting={isSubmittingOffer} className="from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700" />
             </form>
           </section>
