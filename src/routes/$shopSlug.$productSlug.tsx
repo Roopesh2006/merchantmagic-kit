@@ -7,6 +7,7 @@ import { NIKE_FALLBACK } from "@/lib/nike-fallback";
 import { CountdownTimer } from "@/components/CountdownTimer";
 import { ProductCarousel } from "@/components/ProductCarousel";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
+import { LiveViewers } from "@/components/LiveViewers";
 
 export const Route = createFileRoute("/$shopSlug/$productSlug")({
   component: ProductPage,
@@ -151,10 +152,12 @@ function ProductPage() {
           </div>
 
           {offer && (
-            <div className="rounded-xl border border-border bg-card p-4">
+            <div className="space-y-3 rounded-xl border border-border bg-card p-4">
               <CountdownTimer expiresAt={offer.expires_at} />
+              <LiveViewers productId={product.id} />
             </div>
           )}
+          {!offer && <LiveViewers productId={product.id} />}
 
           <div className="prose prose-sm max-w-none text-foreground/80">
             <p className="whitespace-pre-line leading-relaxed">{product.description}</p>
