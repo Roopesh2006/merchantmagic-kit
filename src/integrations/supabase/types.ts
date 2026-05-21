@@ -53,6 +53,7 @@ export type Database = {
         Row: {
           banner_url_1: string
           banner_url_2: string | null
+          category: string | null
           created_at: string
           description: string
           id: string
@@ -66,6 +67,7 @@ export type Database = {
         Insert: {
           banner_url_1?: string
           banner_url_2?: string | null
+          category?: string | null
           created_at?: string
           description?: string
           id?: string
@@ -79,6 +81,7 @@ export type Database = {
         Update: {
           banner_url_1?: string
           banner_url_2?: string | null
+          category?: string | null
           created_at?: string
           description?: string
           id?: string
