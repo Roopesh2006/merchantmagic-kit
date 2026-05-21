@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://merchantmagic-kit.lovable.app/sitemap.xml
