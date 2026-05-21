@@ -38,6 +38,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -259,6 +266,7 @@ function Dashboard({
                     original_price: "",
                     banner_url_1: "",
                     banner_url_2: "",
+                    category: "",
                   })
                 }
               >
@@ -342,6 +350,7 @@ function Dashboard({
                               p.original_price !== null ? String(p.original_price) : "",
                             banner_url_1: p.banner_url_1,
                             banner_url_2: p.banner_url_2 ?? "",
+                            category: (p as { category: string | null }).category ?? "",
                           })
                         }
                       >
@@ -513,7 +522,10 @@ type ProductFormState = {
   original_price: string;
   banner_url_1: string;
   banner_url_2: string;
+  category: string;
 };
+
+const CATEGORIES = ["Electronics", "Fashion", "Home", "Beauty", "Sneakers", "Sports", "Toys", "Other"] as const;
 
 function ProductDialog({
   shopSlug,
@@ -544,6 +556,7 @@ function ProductDialog({
           original_price: f.original_price === "" ? null : Number(f.original_price),
           banner_url_1: f.banner_url_1,
           banner_url_2: f.banner_url_2 === "" ? null : f.banner_url_2,
+          category: f.category === "" ? null : f.category,
         },
       }),
     onSuccess: () => {
@@ -610,6 +623,24 @@ function ProductDialog({
                 onChange={(e) => setF({ ...f, original_price: e.target.value })}
                 placeholder="optional"
               />
+            </div>
+            <div className="space-y-2 col-span-2">
+              <Label>Category</Label>
+              <Select
+                value={f.category || undefined}
+                onValueChange={(v) => setF({ ...f, category: v })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {CATEGORIES.map((c) => (
+                    <SelectItem key={c} value={c}>
+                      {c}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2 col-span-2">
               <Label>Banner image URL 1</Label>

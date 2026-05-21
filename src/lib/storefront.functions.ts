@@ -1,5 +1,4 @@
 import { createServerFn } from "@tanstack/react-start";
-import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 export type StorefrontData = {
@@ -67,36 +66,67 @@ export const getStorefront = createServerFn({ method: "GET" })
     };
   });
 
-const createShopSchema = z.object({
-  shopName: z.string().trim().min(1).max(100),
-  shopSlug: z
-    .string()
-    .trim()
-    .min(2)
-    .max(50)
-    .regex(/^[a-z0-9-]+$/, "lowercase letters, numbers, hyphens only"),
-  phone: z.string().trim().regex(/^\+[0-9]{7,15}$/, "must be +countrycode + digits"),
-  password: z.string().min(6).max(100),
-});
+export type MarketplaceProduct = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  rate: number;
+  original_price: number | null;
+  banner_url_1: string;
+  category: string | null;
+  shop_slug: string;
+  shop_name: string;
+  offer: { discount_price: number; expires_at: string } | null;
+};
 
-export const createShop = createServerFn({ method: "POST" })
-  .inputValidator((d: unknown) => createShopSchema.parse(d))
-  .handler(async ({ data }) => {
-    const bcrypt = await import("bcryptjs");
-    const hash = await bcrypt.hash(data.password, 10);
-    const { data: shop, error } = await supabaseAdmin
-      .from("shop")
-      .insert({
-        name: data.shopName,
-        slug: data.shopSlug,
-        shop_phone_number: data.phone,
-        admin_password_hash: hash,
-      })
-      .select("id, slug")
-      .single();
-    if (error) {
-      if (error.code === "23505") throw new Error("That slug is taken");
-      throw new Error(error.message);
+export const getMarketplace = createServerFn({ method: "GET" }).handler(
+  async (): Promise<MarketplaceProduct[]> => {
+    const { data: products, error } = await supabaseAdmin
+      .from("products")
+      .select(
+        "id, name, slug, description, rate, original_price, banner_url_1, category, shop:shop_id(slug, name)",
+      )
+      .order("created_at", { ascending: false })
+      .limit(500);
+    if (error || !products) return [];
+
+    const ids = products.map((p) => p.id);
+    let offersMap: Record<string, { discount_price: number; expires_at: string }> = {};
+    if (ids.length) {
+      const { data: offers } = await supabaseAdmin
+        .from("offers")
+        .select("product_id, discount_price, expires_at")
+        .in("product_id", ids);
+      offersMap = Object.fromEntries(
+        (offers ?? []).map((o) => [
+          o.product_id,
+          {
+            discount_price: Number(o.discount_price),
+            expires_at: o.expires_at,
+          },
+        ]),
+      );
     }
-    return shop;
-  });
+
+    return products
+      .filter((p) => p.shop)
+      .map((p) => {
+        const shop = p.shop as unknown as { slug: string; name: string };
+        return {
+          id: p.id,
+          name: p.name,
+          slug: p.slug,
+          description: p.description,
+          rate: Number(p.rate),
+          original_price:
+            p.original_price !== null ? Number(p.original_price) : null,
+          banner_url_1: p.banner_url_1,
+          category: p.category,
+          shop_slug: shop.slug,
+          shop_name: shop.name,
+          offer: offersMap[p.id] ?? null,
+        };
+      });
+  },
+);

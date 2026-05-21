@@ -1,287 +1,253 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { toast } from "sonner";
-import {
-  Store,
-  Zap,
-  MessageCircle,
-  Shield,
-  ArrowRight,
-  Sparkles,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Search, Store, Mail, MessageCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { createShop } from "@/lib/storefront.functions";
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
+import { getMarketplace, type MarketplaceProduct } from "@/lib/storefront.functions";
+
+const CATEGORIES = ["All", "Electronics", "Fashion", "Home", "Beauty", "Sneakers", "Sports", "Toys", "Other"];
+
+const WA_REGISTER =
+  "https://wa.me/916380691764?text=Hello%20Platform%20Admin!%20I%20would%20like%20to%20register%20my%20shop%20and%20sell%20products%20on%20your%20marketplace.%20Please%20share%20the%20details.";
 
 export const Route = createFileRoute("/")({
-  component: Landing,
+  component: Marketplace,
   head: () => ({
     meta: [
-      { title: "SELLERPRODUCT — Single-product stores that sell on WhatsApp" },
+      { title: "SELLERPRODUCT — Marketplace of curated single-product stores" },
       {
         name: "description",
         content:
-          "Spin up a high-converting single-product storefront with flash-sale countdowns and one-tap WhatsApp checkout. No code required.",
+          "Browse trending products from verified shops. Flash deals, fast checkout via WhatsApp.",
       },
     ],
   }),
 });
 
-function Landing() {
+function Marketplace() {
+  const fetchMarketplace = useServerFn(getMarketplace);
+  const { data, isLoading } = useQuery({
+    queryKey: ["marketplace"],
+    queryFn: () => fetchMarketplace(),
+  });
+
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState<string>("All");
+
+  const products = data ?? [];
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return products.filter((p) => {
+      if (category !== "All" && (p.category ?? "Other") !== category) return false;
+      if (!q) return true;
+      return (
+        p.name.toLowerCase().includes(q) ||
+        p.description.toLowerCase().includes(q)
+      );
+    });
+  }, [products, search, category]);
+
+  const trending = useMemo(
+    () =>
+      [...products]
+        .sort((a, b) => (b.offer ? 1 : 0) - (a.offer ? 1 : 0))
+        .slice(0, 12),
+    [products],
+  );
+
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-          <Link to="/" className="flex items-center gap-2">
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Header */}
+      <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur">
+        <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 sm:gap-6">
+          <Link to="/" className="flex items-center gap-2 shrink-0">
             <div className="grid h-8 w-8 place-items-center rounded-md bg-foreground text-background">
               <Store className="h-4 w-4" />
             </div>
-            <span className="text-sm font-bold uppercase tracking-[0.18em]">
+            <span className="hidden sm:inline text-sm font-bold uppercase tracking-[0.18em]">
               SellerProduct
             </span>
           </Link>
-          <a
-            href="#create"
-            className="text-sm font-medium text-foreground hover:underline underline-offset-4"
+          <div className="relative flex-1 max-w-2xl">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search products…"
+              className="pl-9"
+            />
+          </div>
+          <Link
+            to="/seller-login"
+            className="shrink-0 text-sm font-medium text-foreground hover:underline underline-offset-4"
           >
-            Create a store →
-          </a>
+            Seller Login
+          </Link>
         </div>
       </header>
 
-      <main>
-        {/* Hero */}
-        <section className="mx-auto max-w-6xl px-4 pb-12 pt-16 sm:pt-24">
-          <div className="grid items-center gap-12 lg:grid-cols-2">
-            <div>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
-                <Sparkles className="h-3 w-3" />
-                Sell in 60 seconds
-              </span>
-              <h1 className="mt-4 text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-                One product.
-                <br />
-                One link.
-                <br />
-                <span className="text-primary">Direct to WhatsApp.</span>
-              </h1>
-              <p className="mt-5 max-w-md text-base text-muted-foreground sm:text-lg">
-                SELLERPRODUCT spins up a focused single-product storefront with live
-                flash-sale countdowns and one-tap checkout straight to your
-                WhatsApp inbox.
-              </p>
-              <div className="mt-7 flex flex-wrap items-center gap-3">
-                <Button asChild size="lg">
-                  <a href="#create">
-                    Create your store
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </a>
-                </Button>
-                <Button asChild size="lg" variant="outline">
-                  <Link to="/$shopSlug/$productSlug" params={{ shopSlug: "nike-store", productSlug: "air-jordan" }}>
-                    See live demo
-                  </Link>
-                </Button>
-              </div>
-            </div>
-
-            {/* Mocked storefront preview */}
-            <div className="relative">
-              <div className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-primary/15 via-transparent to-emerald-500/15 blur-2xl" />
-              <Card className="relative overflow-hidden">
-                <div className="aspect-square w-full bg-muted">
+      {/* Rolling marquee */}
+      {trending.length > 0 && (
+        <section className="border-b border-border bg-muted/30 overflow-hidden">
+          <div className="group relative py-3">
+            <div className="flex w-max animate-marquee gap-3 px-4 hover:[animation-play-state:paused]">
+              {[...trending, ...trending].map((p, i) => (
+                <Link
+                  key={`${p.id}-${i}`}
+                  to="/$shopSlug/$productSlug"
+                  params={{ shopSlug: p.shop_slug, productSlug: p.slug }}
+                  className="flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1.5 shadow-sm hover:border-foreground/40"
+                >
                   <img
-                    src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=900&q=80"
-                    alt="Sample product"
-                    className="h-full w-full object-cover"
+                    src={p.banner_url_1}
+                    alt=""
+                    className="h-7 w-7 rounded-full object-cover"
                   />
-                </div>
-                <CardContent className="space-y-3 p-5">
-                  <h3 className="text-lg font-bold">Air Jordan 1 Retro High OG</h3>
-                  <div className="flex items-end gap-2">
-                    <span className="text-3xl font-bold">$169.00</span>
-                    <span className="pb-1 text-sm text-muted-foreground line-through decoration-red-500 decoration-2">
-                      $220.00
+                  <span className="text-xs font-medium whitespace-nowrap">
+                    {p.name}
+                  </span>
+                  {p.offer && (
+                    <span className="rounded bg-destructive px-1.5 py-0.5 text-[10px] font-bold text-destructive-foreground">
+                      SALE
                     </span>
-                    <span className="ml-auto rounded bg-destructive px-2 py-1 text-xs font-bold text-destructive-foreground">
-                      -23%
-                    </span>
-                  </div>
-                  <div className="flex gap-2">
-                    {["23", "59", "12"].map((v, i) => (
-                      <div
-                        key={i}
-                        className="flex-1 rounded-md bg-foreground py-2 text-center text-background"
-                      >
-                        <div className="text-xl font-bold tabular-nums leading-none">
-                          {v}
-                        </div>
-                        <div className="mt-0.5 text-[9px] uppercase tracking-widest opacity-70">
-                          {["hrs", "min", "sec"][i]}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex items-center justify-center gap-2 rounded-full bg-[#25D366] py-2.5 text-sm font-semibold text-white">
-                    <MessageCircle className="h-4 w-4" />
-                    Buy via WhatsApp
-                  </div>
-                </CardContent>
-              </Card>
+                  )}
+                </Link>
+              ))}
             </div>
           </div>
         </section>
+      )}
 
-        {/* Features */}
-        <section className="border-y border-border bg-muted/30">
-          <div className="mx-auto grid max-w-6xl gap-6 px-4 py-12 sm:grid-cols-3">
-            <Feature
-              icon={<Zap />}
-              title="Flash-sale scarcity"
-              body="Live countdown ticks down to the second. Discount price overrides the standard rate while active."
-            />
-            <Feature
-              icon={<MessageCircle />}
-              title="WhatsApp checkout"
-              body="One tap opens a pre-filled WhatsApp message to your number. Zero payment integrations to wire up."
-            />
-            <Feature
-              icon={<Shield />}
-              title="Verified seller badge"
-              body="Sticky tenant header with a glowing live indicator builds trust before the buyer scrolls."
-            />
+      {/* Category pills */}
+      <div className="border-b border-border">
+        <div className="mx-auto max-w-7xl overflow-x-auto px-4 py-3">
+          <div className="flex gap-2 w-max">
+            {CATEGORIES.map((c) => (
+              <button
+                key={c}
+                onClick={() => setCategory(c)}
+                className={cn(
+                  "rounded-full border px-4 py-1.5 text-sm font-medium whitespace-nowrap transition-colors",
+                  category === c
+                    ? "border-foreground bg-foreground text-background"
+                    : "border-border bg-background hover:bg-muted",
+                )}
+              >
+                {c}
+              </button>
+            ))}
           </div>
-        </section>
+        </div>
+      </div>
 
-        {/* Create */}
-        <section id="create" className="mx-auto max-w-xl px-4 py-16">
-          <h2 className="text-3xl font-bold tracking-tight text-foreground">
-            Create your store
-          </h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Your slug becomes your storefront URL:{" "}
-            <span className="font-mono text-foreground">/your-slug/your-product</span>
-          </p>
-          <CreateShopForm />
-        </section>
+      {/* Grid */}
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6">
+        {isLoading ? (
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <Skeleton key={i} className="aspect-[3/4] w-full" />
+            ))}
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="rounded-lg border border-dashed border-border p-12 text-center">
+            <p className="text-sm text-muted-foreground">
+              No products match your search.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
+            {filtered.map((p) => (
+              <ProductCard key={p.id} p={p} />
+            ))}
+          </div>
+        )}
       </main>
 
-      <footer className="border-t border-border">
-        <div className="mx-auto max-w-6xl px-4 py-6 text-center text-xs text-muted-foreground">
-          SELLERPRODUCT · multi-tenant single-product commerce
+      {/* Footer */}
+      <footer className="border-t border-border bg-muted/30">
+        <div className="mx-auto max-w-7xl px-4 py-8 text-center text-sm text-muted-foreground">
+          <p className="font-medium text-foreground">Become a Seller</p>
+          <p className="mt-2">
+            <a
+              href={WA_REGISTER}
+              target="_blank"
+              rel="noreferrer"
+              className="hover:underline"
+            >
+              +91 6380691764
+            </a>
+            {" · "}
+            <a
+              href="mailto:roopesh5roopesh555@gmail.com"
+              className="hover:underline"
+            >
+              roopesh5roopesh555@gmail.com
+            </a>
+          </p>
+          <p className="mt-4 text-xs">
+            SELLERPRODUCT · curated multi-tenant marketplace
+          </p>
         </div>
       </footer>
     </div>
   );
 }
 
-function Feature({
-  icon,
-  title,
-  body,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  body: string;
-}) {
-  return (
-    <div className="space-y-2">
-      <div className="grid h-9 w-9 place-items-center rounded-md bg-foreground text-background">
-        <span className="[&>svg]:h-4 [&>svg]:w-4">{icon}</span>
-      </div>
-      <h3 className="font-semibold text-foreground">{title}</h3>
-      <p className="text-sm text-muted-foreground">{body}</p>
-    </div>
-  );
-}
-
-function CreateShopForm() {
-  const create = useServerFn(createShop);
-  const navigate = useNavigate();
-  const [shopName, setShopName] = useState("");
-  const [shopSlug, setShopSlug] = useState("");
-  const [phone, setPhone] = useState("+");
-  const [password, setPassword] = useState("");
-
-  const m = useMutation({
-    mutationFn: () =>
-      create({ data: { shopName, shopSlug, phone, password } }),
-    onSuccess: (res) => {
-      toast.success("Store created! Sign in to add products.");
-      navigate({ to: "/$shopSlug/admin", params: { shopSlug: res.slug } });
-    },
-    onError: (e) => toast.error((e as Error).message),
-  });
+function ProductCard({ p }: { p: MarketplaceProduct }) {
+  const showOffer = p.offer && new Date(p.offer.expires_at) > new Date();
+  const price = showOffer ? p.offer!.discount_price : p.rate;
+  const compareAt = showOffer ? p.rate : p.original_price;
+  const pct =
+    compareAt && compareAt > price
+      ? Math.round(((compareAt - price) / compareAt) * 100)
+      : null;
 
   return (
-    <form
-      className="mt-6 space-y-4 rounded-xl border border-border bg-card p-6"
-      onSubmit={(e) => {
-        e.preventDefault();
-        m.mutate();
-      }}
+    <Link
+      to="/$shopSlug/$productSlug"
+      params={{ shopSlug: p.shop_slug, productSlug: p.slug }}
+      className="group block"
     >
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="sn">Store name</Label>
-          <Input
-            id="sn"
-            value={shopName}
-            onChange={(e) => setShopName(e.target.value)}
-            placeholder="Acme Coffee Co."
-            required
-            maxLength={100}
+      <Card className="overflow-hidden transition-shadow hover:shadow-md">
+        <div className="relative aspect-square w-full bg-muted">
+          <img
+            src={p.banner_url_1}
+            alt={p.name}
+            loading="lazy"
+            className="h-full w-full object-cover transition-transform group-hover:scale-105"
           />
+          {pct !== null && (
+            <span className="absolute left-2 top-2 rounded bg-destructive px-1.5 py-0.5 text-[10px] font-bold text-destructive-foreground">
+              -{pct}%
+            </span>
+          )}
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="ss">URL slug</Label>
-          <Input
-            id="ss"
-            value={shopSlug}
-            onChange={(e) =>
-              setShopSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))
-            }
-            placeholder="acme-coffee"
-            required
-            maxLength={50}
-            pattern="[a-z0-9-]+"
-          />
-        </div>
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="ph">WhatsApp number</Label>
-        <Input
-          id="ph"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          placeholder="+14155551234"
-          required
-        />
-        <p className="text-xs text-muted-foreground">
-          Country code required. Used for WhatsApp checkout links.
-        </p>
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="pw">Admin password</Label>
-        <Input
-          id="pw"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          minLength={6}
-        />
-        <p className="text-xs text-muted-foreground">
-          Used to sign in at /{shopSlug || "your-slug"}/admin. Minimum 6 characters.
-        </p>
-      </div>
-      <Button type="submit" className="w-full" disabled={m.isPending} size="lg">
-        {m.isPending ? "Creating…" : "Create store"}
-      </Button>
-    </form>
+        <CardContent className="space-y-1 p-3">
+          <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-foreground">
+            {p.name}
+          </h3>
+          <p className="truncate text-xs text-muted-foreground">{p.shop_name}</p>
+          <div className="flex items-baseline gap-1.5 pt-1">
+            <span className="text-base font-bold text-foreground">
+              ${price.toFixed(2)}
+            </span>
+            {compareAt && compareAt > price && (
+              <span className="text-xs text-muted-foreground line-through">
+                ${compareAt.toFixed(2)}
+              </span>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </Link>
   );
 }
+
+// Re-export icons used in footer (Mail / MessageCircle currently unused but kept available)
+export { Mail, MessageCircle };
