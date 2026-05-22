@@ -3,10 +3,10 @@ import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Loader2, Store, ArrowRight, MessageCircle, Mail } from "lucide-react";
 import { toast } from "sonner";
-import { adminLogin } from "@/lib/admin.functions";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { adminLogin } from "../../../lib/admin.functions";
+import { Button } from "../../../components/ui/button";
+import { Input } from "../../../components/ui/input";
+import { Label } from "../../../components/ui/label";
 import {
   Card,
   CardContent,
@@ -14,7 +14,7 @@ import {
   CardHeader,
   CardTitle,
   CardFooter,
-} from "@/components/ui/card";
+} from "../../../components/ui/card";
 
 const SESSION_KEY = "sellerproduct.merchant.session";
 const WA_REGISTER =
