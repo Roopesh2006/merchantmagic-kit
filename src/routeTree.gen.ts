@@ -14,6 +14,7 @@ import { Route as SellerLoginRouteImport } from './routes/seller-login'
 import { Route as PlatformAdminRouteImport } from './routes/platform-admin'
 import { Route as MerchantAdminRouteImport } from './routes/merchant-admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SellerLoginRouteImport } from './routes/seller/login'
 import { Route as ShopSlugAdminRouteImport } from './routes/$shopSlug.admin'
 import { Route as ShopSlugProductSlugRouteImport } from './routes/$shopSlug.$productSlug'
 
@@ -46,6 +47,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SellerLoginRoute = SellerLoginRouteImport.update({
+  id: '/seller/login',
+  path: '/seller/login',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/seller/login.lazy').then((d) => d.Route))
 const ShopSlugAdminRoute = ShopSlugAdminRouteImport.update({
   id: '/$shopSlug/admin',
   path: '/$shopSlug/admin',
@@ -65,6 +71,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/$shopSlug/$productSlug': typeof ShopSlugProductSlugRoute
   '/$shopSlug/admin': typeof ShopSlugAdminRoute
+  '/seller/login': typeof SellerLoginRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -74,6 +81,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/$shopSlug/$productSlug': typeof ShopSlugProductSlugRoute
   '/$shopSlug/admin': typeof ShopSlugAdminRoute
+  '/seller/login': typeof SellerLoginRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -84,6 +92,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/$shopSlug/$productSlug': typeof ShopSlugProductSlugRoute
   '/$shopSlug/admin': typeof ShopSlugAdminRoute
+  '/seller/login': typeof SellerLoginRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -95,6 +104,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/$shopSlug/$productSlug'
     | '/$shopSlug/admin'
+    | '/seller/login'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -104,6 +114,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/$shopSlug/$productSlug'
     | '/$shopSlug/admin'
+    | '/seller/login'
   id:
     | '__root__'
     | '/'
@@ -113,6 +124,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/$shopSlug/$productSlug'
     | '/$shopSlug/admin'
+    | '/seller/login'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -123,6 +135,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ShopSlugProductSlugRoute: typeof ShopSlugProductSlugRoute
   ShopSlugAdminRoute: typeof ShopSlugAdminRoute
+  SellerLoginRoute: typeof SellerLoginRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -162,6 +175,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/seller/login': {
+      id: '/seller/login'
+      path: '/seller/login'
+      fullPath: '/seller/login'
+      preLoaderRoute: typeof SellerLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/$shopSlug/admin': {
       id: '/$shopSlug/admin'
       path: '/$shopSlug/admin'
@@ -187,6 +207,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ShopSlugProductSlugRoute: ShopSlugProductSlugRoute,
   ShopSlugAdminRoute: ShopSlugAdminRoute,
+  SellerLoginRoute: SellerLoginRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -1,10 +1,9 @@
-import { createLazyFileRoute } from "@tanstack/react-router";
+import { createLazyFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { CalendarIcon, LogOut, Store, Package, Zap, Loader2 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import {
-  adminLogin,
   adminGetShop,
   adminUpdateShop,
   adminListProducts,
@@ -58,29 +57,31 @@ type ProductRow = {
 };
 
 function MerchantAdmin() {
+  const navigate = useNavigate();
   const [session, setSession] = useState<Session | null>(null);
   const [bootstrapped, setBootstrapped] = useState(false);
 
   useEffect(() => {
+    let parsed: Session | null = null;
     try {
       const raw = localStorage.getItem(SESSION_KEY);
-      if (raw) setSession(JSON.parse(raw));
+      if (raw) parsed = JSON.parse(raw) as Session;
     } catch {
       /* ignore */
     }
+    if (!parsed?.token) {
+      navigate({ to: "/seller/login", replace: true });
+      return;
+    }
+    setSession(parsed);
     setBootstrapped(true);
-  }, []);
+  }, [navigate]);
 
-  if (!bootstrapped) return null;
-
-  if (!session) {
+  if (!bootstrapped || !session) {
     return (
-      <LoginCard
-        onLogin={(s) => {
-          localStorage.setItem(SESSION_KEY, JSON.stringify(s));
-          setSession(s);
-        }}
-      />
+      <div className="flex min-h-screen items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
     );
   }
 
@@ -89,71 +90,9 @@ function MerchantAdmin() {
       session={session}
       onLogout={() => {
         localStorage.removeItem(SESSION_KEY);
-        setSession(null);
+        navigate({ to: "/seller/login", replace: true });
       }}
     />
-  );
-}
-
-function LoginCard({ onLogin }: { onLogin: (s: Session) => void }) {
-  const login = useServerFn(adminLogin);
-  const [shopSlug, setShopSlug] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const res = await login({ data: { shopSlug: shopSlug.trim(), password } });
-      onLogin({ token: res.token, shopSlug: shopSlug.trim(), shopName: res.shopName });
-      toast.success(`Welcome back, ${res.shopName}`);
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Login failed");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-2xl">Merchant Workspace</CardTitle>
-          <CardDescription>Sign in to manage your shop on SELLERPRODUCT.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={submit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="shopSlug">Shop slug</Label>
-              <Input
-                id="shopSlug"
-                placeholder="nike-store"
-                value={shopSlug}
-                onChange={(e) => setShopSlug(e.target.value)}
-                required
-                autoComplete="username"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                autoComplete="current-password"
-              />
-            </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Sign in
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
   );
 }
 
