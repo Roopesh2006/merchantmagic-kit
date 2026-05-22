@@ -38,7 +38,9 @@ const MerchantAdminRoute = MerchantAdminRouteImport.update({
   id: '/merchant-admin',
   path: '/merchant-admin',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() =>
+  import('./routes/merchant-admin.lazy').then((d) => d.Route),
+)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
