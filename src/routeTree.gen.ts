@@ -10,7 +10,6 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as SellerLoginRouteImport } from './routes/seller-login'
 import { Route as PlatformAdminRouteImport } from './routes/platform-admin'
 import { Route as MerchantAdminRouteImport } from './routes/merchant-admin'
 import { Route as IndexRouteImport } from './routes/index'
@@ -21,11 +20,6 @@ import { Route as ShopSlugProductSlugRouteImport } from './routes/$shopSlug.$pro
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SellerLoginRoute = SellerLoginRouteImport.update({
-  id: '/seller-login',
-  path: '/seller-login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlatformAdminRoute = PlatformAdminRouteImport.update({
@@ -67,7 +61,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/merchant-admin': typeof MerchantAdminRoute
   '/platform-admin': typeof PlatformAdminRoute
-  '/seller-login': typeof SellerLoginRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/$shopSlug/$productSlug': typeof ShopSlugProductSlugRoute
   '/$shopSlug/admin': typeof ShopSlugAdminRoute
@@ -77,7 +70,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/merchant-admin': typeof MerchantAdminRoute
   '/platform-admin': typeof PlatformAdminRoute
-  '/seller-login': typeof SellerLoginRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/$shopSlug/$productSlug': typeof ShopSlugProductSlugRoute
   '/$shopSlug/admin': typeof ShopSlugAdminRoute
@@ -88,7 +80,6 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/merchant-admin': typeof MerchantAdminRoute
   '/platform-admin': typeof PlatformAdminRoute
-  '/seller-login': typeof SellerLoginRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/$shopSlug/$productSlug': typeof ShopSlugProductSlugRoute
   '/$shopSlug/admin': typeof ShopSlugAdminRoute
@@ -100,7 +91,6 @@ export interface FileRouteTypes {
     | '/'
     | '/merchant-admin'
     | '/platform-admin'
-    | '/seller-login'
     | '/sitemap.xml'
     | '/$shopSlug/$productSlug'
     | '/$shopSlug/admin'
@@ -110,7 +100,6 @@ export interface FileRouteTypes {
     | '/'
     | '/merchant-admin'
     | '/platform-admin'
-    | '/seller-login'
     | '/sitemap.xml'
     | '/$shopSlug/$productSlug'
     | '/$shopSlug/admin'
@@ -120,7 +109,6 @@ export interface FileRouteTypes {
     | '/'
     | '/merchant-admin'
     | '/platform-admin'
-    | '/seller-login'
     | '/sitemap.xml'
     | '/$shopSlug/$productSlug'
     | '/$shopSlug/admin'
@@ -131,7 +119,6 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   MerchantAdminRoute: typeof MerchantAdminRoute
   PlatformAdminRoute: typeof PlatformAdminRoute
-  SellerLoginRoute: typeof SellerLoginRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ShopSlugProductSlugRoute: typeof ShopSlugProductSlugRoute
   ShopSlugAdminRoute: typeof ShopSlugAdminRoute
@@ -145,13 +132,6 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/seller-login': {
-      id: '/seller-login'
-      path: '/seller-login'
-      fullPath: '/seller-login'
-      preLoaderRoute: typeof SellerLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/platform-admin': {
@@ -203,7 +183,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   MerchantAdminRoute: MerchantAdminRoute,
   PlatformAdminRoute: PlatformAdminRoute,
-  SellerLoginRoute: SellerLoginRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ShopSlugProductSlugRoute: ShopSlugProductSlugRoute,
   ShopSlugAdminRoute: ShopSlugAdminRoute,
@@ -212,3 +191,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

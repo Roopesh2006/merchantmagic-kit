@@ -84,7 +84,7 @@ function Marketplace() {
             />
           </div>
           <Link
-            to="/seller-login"
+            to="/seller/login"
             className="shrink-0 text-sm font-medium text-foreground hover:underline underline-offset-4"
           >
             Seller Login

@@ -10,7 +10,7 @@ export const Route = createFileRoute("/sitemap.xml")({
       GET: async () => {
         const urls: string[] = [
           `  <url><loc>${BASE_URL}/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>`,
-          `  <url><loc>${BASE_URL}/seller-login</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>`,
+          `  <url><loc>${BASE_URL}/seller/login</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>`,
         ];
 
         const { data: products } = await supabaseAdmin
