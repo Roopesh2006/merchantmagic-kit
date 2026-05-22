@@ -125,8 +125,8 @@ function ProductPage() {
       <main className="mx-auto max-w-3xl px-4 py-6">
         {/* Shop Banners Section */}
         <ShopBanners
-          banner_url_1={shop.banner_url_1}
-          banner_url_2={shop.banner_url_2}
+          banner_url_1={shop.banner_url_1 || ""}
+          banner_url_2={shop.banner_url_2 || ""}
           shopName={shop.name}
         />
 
