@@ -73,7 +73,8 @@ function ShopPage() {
     );
   }
 
-  const { shop, products } = data;
+  const shop = (data as any).shop;
+  const products = (data as any).products || [];
 
   return (
     <div className="min-h-screen bg-background pb-24">
