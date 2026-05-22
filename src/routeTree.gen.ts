@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SellerLoginRouteImport } from './routes/seller-login'
 import { Route as PlatformAdminRouteImport } from './routes/platform-admin'
+import { Route as MerchantAdminRouteImport } from './routes/merchant-admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShopSlugAdminRouteImport } from './routes/$shopSlug.admin'
 import { Route as ShopSlugProductSlugRouteImport } from './routes/$shopSlug.$productSlug'
@@ -33,6 +34,11 @@ const PlatformAdminRoute = PlatformAdminRouteImport.update({
 } as any).lazy(() =>
   import('./routes/platform-admin.lazy').then((d) => d.Route),
 )
+const MerchantAdminRoute = MerchantAdminRouteImport.update({
+  id: '/merchant-admin',
+  path: '/merchant-admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -51,6 +57,7 @@ const ShopSlugProductSlugRoute = ShopSlugProductSlugRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/merchant-admin': typeof MerchantAdminRoute
   '/platform-admin': typeof PlatformAdminRoute
   '/seller-login': typeof SellerLoginRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -59,6 +66,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/merchant-admin': typeof MerchantAdminRoute
   '/platform-admin': typeof PlatformAdminRoute
   '/seller-login': typeof SellerLoginRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -68,6 +76,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/merchant-admin': typeof MerchantAdminRoute
   '/platform-admin': typeof PlatformAdminRoute
   '/seller-login': typeof SellerLoginRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -78,6 +87,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/merchant-admin'
     | '/platform-admin'
     | '/seller-login'
     | '/sitemap.xml'
@@ -86,6 +96,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/merchant-admin'
     | '/platform-admin'
     | '/seller-login'
     | '/sitemap.xml'
@@ -94,6 +105,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/merchant-admin'
     | '/platform-admin'
     | '/seller-login'
     | '/sitemap.xml'
@@ -103,6 +115,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  MerchantAdminRoute: typeof MerchantAdminRoute
   PlatformAdminRoute: typeof PlatformAdminRoute
   SellerLoginRoute: typeof SellerLoginRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -133,6 +146,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlatformAdminRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/merchant-admin': {
+      id: '/merchant-admin'
+      path: '/merchant-admin'
+      fullPath: '/merchant-admin'
+      preLoaderRoute: typeof MerchantAdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -159,6 +179,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  MerchantAdminRoute: MerchantAdminRoute,
   PlatformAdminRoute: PlatformAdminRoute,
   SellerLoginRoute: SellerLoginRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
@@ -168,3 +189,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
