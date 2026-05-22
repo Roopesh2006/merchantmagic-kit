@@ -76,7 +76,7 @@ function PlatformAdmin() {
     e.preventDefault()
     setIsSubmittingShop(true)
     try {
-      const { error } = await supabase.from('shops').insert([{
+      const { error } = await supabase.from('shops' as any).insert([{
         name: shopName,
         slug: shopSlug,
         shop_phone_number: shopPhone,
