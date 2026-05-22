@@ -75,7 +75,7 @@ export const adminGetShop = createServerFn({ method: "POST" })
     const shopId = await assertSession(data.token, data.shopSlug);
     const { data: shop, error } = await supabaseAdmin
       .from("shop")
-      .select("id, name, slug, shop_phone_number")
+      .select("id, name, slug, shop_phone_number, banner_url_1, banner_url_2")
       .eq("id", shopId)
       .single();
     if (error) throw new Error(error.message);
@@ -93,6 +93,8 @@ export const adminUpdateShop = createServerFn({ method: "POST" })
           .string()
           .trim()
           .regex(/^\+[0-9]{7,15}$/, "must include country code, e.g. +14155551234"),
+        banner_url_1: z.string().trim().max(1000).optional().default(""),
+        banner_url_2: z.string().trim().max(1000).nullable().optional(),
       })
       .parse(d),
   )
@@ -100,7 +102,12 @@ export const adminUpdateShop = createServerFn({ method: "POST" })
     const shopId = await assertSession(data.token, data.shopSlug);
     const { error } = await supabaseAdmin
       .from("shop")
-      .update({ name: data.name, shop_phone_number: data.shop_phone_number })
+      .update({
+        name: data.name,
+        shop_phone_number: data.shop_phone_number,
+        banner_url_1: data.banner_url_1 ?? "",
+        banner_url_2: data.banner_url_2 || null,
+      })
       .eq("id", shopId);
     if (error) throw new Error(error.message);
     return { ok: true };

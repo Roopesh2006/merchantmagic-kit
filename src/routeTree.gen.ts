@@ -11,6 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SellerLoginRouteImport } from './routes/seller-login'
+import { Route as PlatformAdminRouteImport } from './routes/platform-admin'
+import { Route as MerchantAdminRouteImport } from './routes/merchant-admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShopSlugAdminRouteImport } from './routes/$shopSlug.admin'
 import { Route as ShopSlugProductSlugRouteImport } from './routes/$shopSlug.$productSlug'
@@ -25,6 +27,20 @@ const SellerLoginRoute = SellerLoginRouteImport.update({
   path: '/seller-login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PlatformAdminRoute = PlatformAdminRouteImport.update({
+  id: '/platform-admin',
+  path: '/platform-admin',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/platform-admin.lazy').then((d) => d.Route),
+)
+const MerchantAdminRoute = MerchantAdminRouteImport.update({
+  id: '/merchant-admin',
+  path: '/merchant-admin',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/merchant-admin.lazy').then((d) => d.Route),
+)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -43,6 +59,8 @@ const ShopSlugProductSlugRoute = ShopSlugProductSlugRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/merchant-admin': typeof MerchantAdminRoute
+  '/platform-admin': typeof PlatformAdminRoute
   '/seller-login': typeof SellerLoginRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/$shopSlug/$productSlug': typeof ShopSlugProductSlugRoute
@@ -50,6 +68,8 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/merchant-admin': typeof MerchantAdminRoute
+  '/platform-admin': typeof PlatformAdminRoute
   '/seller-login': typeof SellerLoginRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/$shopSlug/$productSlug': typeof ShopSlugProductSlugRoute
@@ -58,6 +78,8 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/merchant-admin': typeof MerchantAdminRoute
+  '/platform-admin': typeof PlatformAdminRoute
   '/seller-login': typeof SellerLoginRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/$shopSlug/$productSlug': typeof ShopSlugProductSlugRoute
@@ -67,6 +89,8 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/merchant-admin'
+    | '/platform-admin'
     | '/seller-login'
     | '/sitemap.xml'
     | '/$shopSlug/$productSlug'
@@ -74,6 +98,8 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/merchant-admin'
+    | '/platform-admin'
     | '/seller-login'
     | '/sitemap.xml'
     | '/$shopSlug/$productSlug'
@@ -81,6 +107,8 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/merchant-admin'
+    | '/platform-admin'
     | '/seller-login'
     | '/sitemap.xml'
     | '/$shopSlug/$productSlug'
@@ -89,6 +117,8 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  MerchantAdminRoute: typeof MerchantAdminRoute
+  PlatformAdminRoute: typeof PlatformAdminRoute
   SellerLoginRoute: typeof SellerLoginRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ShopSlugProductSlugRoute: typeof ShopSlugProductSlugRoute
@@ -109,6 +139,20 @@ declare module '@tanstack/react-router' {
       path: '/seller-login'
       fullPath: '/seller-login'
       preLoaderRoute: typeof SellerLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/platform-admin': {
+      id: '/platform-admin'
+      path: '/platform-admin'
+      fullPath: '/platform-admin'
+      preLoaderRoute: typeof PlatformAdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/merchant-admin': {
+      id: '/merchant-admin'
+      path: '/merchant-admin'
+      fullPath: '/merchant-admin'
+      preLoaderRoute: typeof MerchantAdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -137,6 +181,8 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  MerchantAdminRoute: MerchantAdminRoute,
+  PlatformAdminRoute: PlatformAdminRoute,
   SellerLoginRoute: SellerLoginRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ShopSlugProductSlugRoute: ShopSlugProductSlugRoute,

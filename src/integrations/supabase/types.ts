@@ -112,6 +112,8 @@ export type Database = {
       shop: {
         Row: {
           admin_password_hash: string
+          banner_url_1: string
+          banner_url_2: string | null
           created_at: string
           id: string
           name: string
@@ -121,6 +123,8 @@ export type Database = {
         }
         Insert: {
           admin_password_hash: string
+          banner_url_1?: string
+          banner_url_2?: string | null
           created_at?: string
           id?: string
           name: string
@@ -130,6 +134,8 @@ export type Database = {
         }
         Update: {
           admin_password_hash?: string
+          banner_url_1?: string
+          banner_url_2?: string | null
           created_at?: string
           id?: string
           name?: string
