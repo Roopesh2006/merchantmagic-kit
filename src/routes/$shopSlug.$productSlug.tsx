@@ -1,13 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ShieldCheck, ArrowLeft } from "lucide-react";
+import { ShieldCheck, ArrowLeft, ExternalLink } from "lucide-react";
 import { getStorefront, type StorefrontData } from "@/lib/storefront.functions";
 import { NIKE_FALLBACK } from "@/lib/nike-fallback";
 import { CountdownTimer } from "@/components/CountdownTimer";
 import { ProductCarousel } from "@/components/ProductCarousel";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { LiveViewers } from "@/components/LiveViewers";
+import { ShopBanners } from "@/components/ShopBanners";
 
 export const Route = createFileRoute("/$shopSlug/$productSlug")({
   component: ProductPage,
@@ -122,6 +123,13 @@ function ProductPage() {
       </header>
 
       <main className="mx-auto max-w-3xl px-4 py-6">
+        {/* Shop Banners Section */}
+        <ShopBanners
+          bannerUrl1={shop.banner_url_1}
+          bannerUrl2={shop.banner_url_2}
+          shopName={shop.name}
+        />
+
         <ProductCarousel images={images.length ? images : [""]} alt={product.name} />
 
         <div className="mt-6 space-y-5">
@@ -162,6 +170,28 @@ function ProductPage() {
 
           <div className="prose prose-sm max-w-none text-foreground/80">
             <p className="whitespace-pre-line leading-relaxed">{product.description}</p>
+          </div>
+
+          {/* View More From This Shop */}
+          <div className="rounded-xl border border-border bg-card p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-foreground">
+                  Explore more from <span className="font-bold">{shop.name}</span>
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Browse the full catalog of products from this verified seller.
+                </p>
+              </div>
+              <Link
+                to="/$shopSlug"
+                params={{ shopSlug }}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
+              >
+                <ExternalLink className="h-4 w-4" />
+                View shop
+              </Link>
+            </div>
           </div>
         </div>
       </main>

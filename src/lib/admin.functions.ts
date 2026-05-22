@@ -47,6 +47,92 @@ async function assertSession(token: string, shopSlug: string): Promise<string> {
   return shopId;
 }
 
+// ---- Create Shop (Platform Admin) ----
+export const adminCreateShop = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        masterKey: z.string().min(1),
+        name: z.string().trim().min(1).max(100),
+        slug: z
+          .string()
+          .trim()
+          .min(1)
+          .max(80)
+          .regex(/^[a-z0-9-]+$/, "lowercase letters, numbers, hyphens only"),
+        shop_phone_number: z
+          .string()
+          .trim()
+          .regex(/^\+[0-9]{7,15}$/, "must include country code, e.g. +14155551234"),
+        password: z.string().min(6).max(128),
+        banner_url_1: z.string().trim().max(1000).default(""),
+        banner_url_2: z.string().trim().max(1000).nullable().optional(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data }) => {
+    const masterKey = process.env.VITE_ADMIN_MASTER_KEY || process.env.ADMIN_MASTER_KEY || "admin123";
+    if (data.masterKey !== masterKey) {
+      throw new Error("Invalid master key");
+    }
+    const bcrypt = await import("bcryptjs");
+    const salt = await bcrypt.genSalt(10);
+    const hash = await bcrypt.hash(data.password, salt);
+
+    const { error } = await supabaseAdmin.from("shop").insert({
+      name: data.name,
+      slug: data.slug,
+      shop_phone_number: data.shop_phone_number,
+      admin_password_hash: hash,
+      banner_url_1: data.banner_url_1,
+      banner_url_2: data.banner_url_2 || null,
+    });
+    if (error) {
+      if (error.code === "23505") throw new Error("That shop slug is already taken");
+      throw new Error(error.message);
+    }
+    return { ok: true };
+  });
+
+// ---- Change Password ----
+export const adminChangePassword = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        token: z.string(),
+        shopSlug: z.string(),
+        currentPassword: z.string().min(1),
+        newPassword: z.string().min(6).max(128),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data }) => {
+    const shopId = await assertSession(data.token, data.shopSlug);
+    const bcrypt = await import("bcryptjs");
+
+    // Verify current password
+    const { data: shop } = await supabaseAdmin
+      .from("shop")
+      .select("admin_password_hash")
+      .eq("id", shopId)
+      .single();
+    if (!shop) throw new Error("Shop not found");
+
+    const ok = await bcrypt.compare(data.currentPassword, shop.admin_password_hash);
+    if (!ok) throw new Error("Current password is incorrect");
+
+    const salt = await bcrypt.genSalt(10);
+    const hash = await bcrypt.hash(data.newPassword, salt);
+
+    const { error } = await supabaseAdmin
+      .from("shop")
+      .update({ admin_password_hash: hash })
+      .eq("id", shopId);
+    if (error) throw new Error(error.message);
+
+    return { ok: true };
+  });
+
 // ---- Login ----
 export const adminLogin = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) =>

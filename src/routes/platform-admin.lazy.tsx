@@ -1,6 +1,8 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
-import { supabase } from '../integrations/supabase/client'
+import { useServerFn } from '@tanstack/react-start'
+import { toast } from 'sonner'
+import { adminCreateShop } from '../lib/admin.functions'
 
 // Define the expected props for InputField
 interface InputFieldProps {
@@ -72,24 +74,29 @@ function PlatformAdmin() {
     }
   }
 
+  const createShop = useServerFn(adminCreateShop)
+
   const handleAddShop = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmittingShop(true)
     try {
-      const { error } = await supabase.from('shops' as any).insert([{
-        name: shopName,
-        slug: shopSlug,
-        shop_phone_number: shopPhone,
-        admin_password_hash: shopPassword,
-        banner_url_1: bannerUrl1,
-        banner_url_2: bannerUrl2,
-      }])
-      if (error) throw error
-      alert('Shop added successfully!')
+      const masterKey = import.meta.env.VITE_ADMIN_MASTER_KEY || 'admin123'
+      await createShop({
+        data: {
+          masterKey,
+          name: shopName,
+          slug: shopSlug,
+          shop_phone_number: shopPhone,
+          password: shopPassword,
+          banner_url_1: bannerUrl1,
+          banner_url_2: bannerUrl2 || null,
+        },
+      })
+      toast.success('Shop added successfully!')
       setShopName(''); setShopSlug(''); setShopPhone(''); setShopPassword('');
       setBannerUrl1(''); setBannerUrl2('');
     } catch (error: any) {
-      alert(`Error adding shop: ${error.message}`)
+      toast.error(error instanceof Error ? error.message : 'Error adding shop')
     } finally {
       setIsSubmittingShop(false)
     }

@@ -5,6 +5,8 @@ export const NIKE_FALLBACK = {
     name: "Nike Official Store",
     slug: "nike-store",
     shop_phone_number: "+12025550143",
+    banner_url_1: "",
+    banner_url_2: null,
   },
   product: {
     id: "fallback-aj",

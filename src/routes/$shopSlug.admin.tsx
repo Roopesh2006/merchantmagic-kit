@@ -57,6 +57,7 @@ import {
   adminDeleteProduct,
   adminUpsertOffer,
   adminDeleteOffer,
+  adminChangePassword,
 } from "@/lib/admin.functions";
 import {
   saveSession,
@@ -370,12 +371,16 @@ function Dashboard({
           </Card>
         </section>
 
-        <aside>
+        <aside className="space-y-6">
           <ShopSettingsCard
             shopSlug={shopSlug}
             token={token}
             shop={shopQ.data}
             onSaved={() => qc.invalidateQueries({ queryKey: ["admin-shop", shopSlug] })}
+          />
+          <ChangePasswordCard
+            shopSlug={shopSlug}
+            token={token}
           />
         </aside>
       </main>
@@ -444,23 +449,36 @@ function ShopSettingsCard({
 }: {
   shopSlug: string;
   token: string;
-  shop: { name: string; shop_phone_number: string } | undefined;
+  shop: { name: string; shop_phone_number: string; banner_url_1: string; banner_url_2: string | null } | undefined;
   onSaved: () => void;
 }) {
   const update = useServerFn(adminUpdateShop);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [banner1, setBanner1] = useState("");
+  const [banner2, setBanner2] = useState("");
 
   useEffect(() => {
     if (shop) {
       setName(shop.name);
       setPhone(shop.shop_phone_number);
+      setBanner1(shop.banner_url_1 ?? "");
+      setBanner2(shop.banner_url_2 ?? "");
     }
   }, [shop]);
 
   const m = useMutation({
     mutationFn: () =>
-      update({ data: { token, shopSlug, name, shop_phone_number: phone } }),
+      update({
+        data: {
+          token,
+          shopSlug,
+          name,
+          shop_phone_number: phone,
+          banner_url_1: banner1,
+          banner_url_2: banner2 || null,
+        },
+      }),
     onSuccess: () => {
       toast.success("Shop updated");
       onSaved();
@@ -504,8 +522,112 @@ function ShopSettingsCard({
               Must include country code (starts with +).
             </p>
           </div>
+          <div className="space-y-2">
+            <Label htmlFor="shop-banner-1">Banner image URL 1</Label>
+            <Input
+              id="shop-banner-1"
+              value={banner1}
+              onChange={(e) => setBanner1(e.target.value)}
+              placeholder="https://..."
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="shop-banner-2">Banner image URL 2 (optional)</Label>
+            <Input
+              id="shop-banner-2"
+              value={banner2}
+              onChange={(e) => setBanner2(e.target.value)}
+              placeholder="https://..."
+            />
+          </div>
           <Button type="submit" disabled={m.isPending} className="w-full">
             {m.isPending ? "Saving…" : "Save changes"}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
+
+function ChangePasswordCard({
+  shopSlug,
+  token,
+}: {
+  shopSlug: string;
+  token: string;
+}) {
+  const changePw = useServerFn(adminChangePassword);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const m = useMutation({
+    mutationFn: () => {
+      if (newPassword !== confirmPassword) {
+        throw new Error("New passwords do not match");
+      }
+      return changePw({
+        data: { token, shopSlug, currentPassword, newPassword },
+      });
+    },
+    onSuccess: () => {
+      toast.success("Password changed successfully");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    },
+    onError: (e) => toast.error((e as Error).message),
+  });
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Change password</CardTitle>
+        <CardDescription>Update your admin password.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form
+          className="space-y-3"
+          onSubmit={(e) => {
+            e.preventDefault();
+            m.mutate();
+          }}
+        >
+          <div className="space-y-2">
+            <Label htmlFor="current-pw">Current password</Label>
+            <Input
+              id="current-pw"
+              type="password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="new-pw">New password</Label>
+            <Input
+              id="new-pw"
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="Min. 6 characters"
+              required
+              minLength={6}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="confirm-pw">Confirm new password</Label>
+            <Input
+              id="confirm-pw"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              minLength={6}
+            />
+          </div>
+          <Button type="submit" disabled={m.isPending} className="w-full">
+            {m.isPending ? "Changing…" : "Change password"}
           </Button>
         </form>
       </CardContent>
