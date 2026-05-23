@@ -43,7 +43,7 @@ function SellerLoginPage() {
         JSON.stringify({ token: res.token, shopSlug: slug, shopName: res.shopName }),
       );
       toast.success(`Welcome back, ${res.shopName}`);
-      navigate({ to: "/merchant-admin" });
+      navigate({ to: "/$shopSlug/admin", params: { shopSlug: slug } });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Login failed");
     } finally {
