@@ -1,5 +1,13 @@
 {
+  "outputDirectory": "dist/client",
   "rewrites": [
-    { "source": "/(.*)", "destination": "/api/index" }
+    {
+      "source": "/assets/(.*)",
+      "destination": "/assets/$1"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/api/index"
+    }
   ]
 }
