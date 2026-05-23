@@ -1,0 +1,12 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/server/server.js" }
+  ],
+  "functions": {
+    "dist/server/server.js": {
+      "runtime": "edge"
+    }
+  }
+}
